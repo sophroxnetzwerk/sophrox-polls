@@ -7,16 +7,16 @@ on:
       - main
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - master
+      - main
     paths:
       - 'backend/**'
       - 'sophrox-polls/**'
       - 'Dockerfile.backend'
       - 'Dockerfile.frontend'
       - '.github/workflows/build-and-push.yml'
-  pull_request:
-    branches:
-      - master
-      - main
 
 env:
   REGISTRY: ghcr.io
