@@ -314,8 +314,18 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
     }
 
     console.log("🔐 Generating JWT tokens...")
-    const accessToken = generateAccessToken(user.id, user.role)
-    const refreshToken = generateRefreshToken(user.id)
+    let accessToken: string
+    let refreshToken: string
+    
+    try {
+      accessToken = generateAccessToken(user.id, user.role)
+      console.log("✅ Access token generated")
+      refreshToken = generateRefreshToken(user.id)
+      console.log("✅ Refresh token generated")
+    } catch (tokenError) {
+      console.error("❌ Token generation failed:", tokenError instanceof Error ? tokenError.message : String(tokenError))
+      throw tokenError
+    }
 
     // If admin, sync category colors with Discord
     if (user.role === "admin") {
