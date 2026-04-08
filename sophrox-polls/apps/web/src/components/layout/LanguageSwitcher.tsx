@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Globe, Check } from "lucide-react"
 
 export const LanguageSwitcher = () => {
-  const { i18n, t } = useTranslation()
+  const { i18n } = useTranslation()
 
   const languageOptions = [
     { code: "en", label: "English" },
