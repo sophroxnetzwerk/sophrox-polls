@@ -392,7 +392,7 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
       message: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined
     })
-    res.status(500).json({ error: "Server error", statusCode: 500, message: "Internal server error" })
+    return res.status(500).json({ error: "Server error", statusCode: 500, message: "Internal server error" })
   }
 })
 
