@@ -9,13 +9,15 @@ COPY backend/package*.json ./
 # Install all dependencies (including dev for build)
 RUN npm ci
 
-# Copy source code
+# Copy source code - be explicit about all files
 COPY backend/src ./src
 COPY backend/tsconfig.json ./
 COPY backend/prisma ./prisma
 
-# Build TypeScript
-RUN npm run build && ls -la dist/
+# Build TypeScript - verify all source files exist
+RUN echo "Source files:" && find src -name "*.ts" && \
+    npm run build && \
+    echo "Compiled files:" && ls -la dist/
 
 # Production stage
 FROM node:20-alpine
@@ -31,8 +33,11 @@ RUN npm ci --omit=dev
 # Copy Prisma schema
 COPY backend/prisma ./prisma
 
-# Copy built files from builder
+# Copy built files from builder - be explicit
 COPY --from=builder /app/dist ./dist
+
+# Verify files are there
+RUN echo "Files in /app/dist:" && ls -la dist/
 
 # Expose port
 EXPOSE 3000
