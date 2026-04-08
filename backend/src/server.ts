@@ -339,7 +339,7 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
             // Get ALL categories to debug
             const allCategories = await prisma.category.findMany()
             console.log(`[SYNC_DEBUG] Total categories: ${allCategories.length}`)
-            allCategories.forEach((cat) => {
+            allCategories.forEach((cat: any) => {
               console.log(`  - ${cat.name}: discordRoleId = ${cat.discordRoleId || "NOT SET"}`)
             })
 
@@ -953,7 +953,7 @@ app.get("/api/v1/polls/:id", async (req: Request, res: Response) => {
         },
         select: { optionId: true },
       })
-      userVotes = userVoteRecords.map((v) => v.optionId)
+      userVotes = userVoteRecords.map((v: any) => v.optionId)
       console.log(`\x1b[32m[DEBUG]\x1b[0m User ${userId} has voted for options:`, userVotes)
     }
 
@@ -1006,7 +1006,7 @@ app.patch("/api/v1/polls/:id", verifyToken, async (req: Request, res: Response) 
 
     const formattedPoll = {
       ...updated,
-      options: updated.options.map((opt) => ({
+      options: updated.options.map((opt: any) => ({
         id: opt.id,
         label: opt.label,
         voteCount: opt.votes.length,
