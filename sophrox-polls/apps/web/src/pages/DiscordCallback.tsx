@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useTranslation } from "react-i18next"
+import { useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/api"
 import { setTokens } from "@/lib/auth"
 import { toast } from "sonner"
@@ -9,6 +10,7 @@ export const DiscordCallback = () => {
   const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [loading, setLoading] = useState(true)
   const hasProcessed = useRef(false)
 
@@ -52,6 +54,11 @@ export const DiscordCallback = () => {
           console.warn("⚠️ Failed to sync roles:", syncError)
           // Don't fail login if role sync fails
         }
+        
+        // Invalidate all queries to refresh data
+        await queryClient.invalidateQueries({ queryKey: ["polls"] })
+        await queryClient.invalidateQueries({ queryKey: ["categories"] })
+        console.log("🔄 Cache invalidated")
         
         toast.success(t("auth.loginSuccess"))
         navigate("/dashboard")

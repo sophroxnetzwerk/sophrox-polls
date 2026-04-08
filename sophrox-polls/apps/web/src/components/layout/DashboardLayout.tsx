@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
+import { useQueryClient } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,9 +18,10 @@ import {
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Plus, Search, Zap, TrendingUp, BarChart3, Loader2, Filter } from "lucide-react"
-import { getUserRole, getUserId } from "../../lib/auth"
+import { getUserRole, getUserId, isAuthenticated } from "../../lib/auth"
 import { usePollList } from "../../hooks/usePolls"
 import { useCategories } from "../../hooks/useCategories"
+import { api } from "../../lib/api"
 import type { Poll } from "../../hooks/usePolls"
 import PollCard from "../polls/PollCard"
 import CreatePollModal from "../polls/CreatePollModal"
@@ -28,6 +30,7 @@ export const DashboardLayout = () => {
   const { t } = useTranslation()
   const role = getUserRole()
   const userId = getUserId() || ""
+  const queryClient = useQueryClient()
   const { data, isLoading } = usePollList()
   const { data: categoriesData } = useCategories()
   const [searchQuery, setSearchQuery] = useState("")
@@ -35,6 +38,25 @@ export const DashboardLayout = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<{ active: boolean; closed: boolean }>({ active: true, closed: true })
+
+  // Sync roles every 15 seconds to catch Discord role changes
+  useEffect(() => {
+    if (!isAuthenticated()) return
+
+    const syncInterval = setInterval(async () => {
+      try {
+        await api.post("/auth/sync-roles", {})
+        // Invalidate cache to refresh polls and categories
+        await queryClient.invalidateQueries({ queryKey: ["polls"] })
+        await queryClient.invalidateQueries({ queryKey: ["categories"] })
+        console.log("🔄 [AUTO-SYNC] Roles and cache refreshed")
+      } catch (error) {
+        console.warn("⚠️ [AUTO-SYNC] Failed to sync roles:", error)
+      }
+    }, 15000) // 15 seconds
+
+    return () => clearInterval(syncInterval)
+  }, [queryClient])
 
   const myPolls = useMemo(
     () => (data?.polls || []).filter((poll: Poll) => poll.creatorId === userId) || [],
