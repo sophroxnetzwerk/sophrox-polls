@@ -1459,6 +1459,24 @@ app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok" })
 })
 
+// Global error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error("❌ Unhandled error:", {
+    message: err instanceof Error ? err.message : String(err),
+    stack: err instanceof Error ? err.stack : undefined,
+    path: req.path,
+    method: req.method,
+  })
+  
+  if (!res.headersSent) {
+    return res.status(500).json({ 
+      error: "Internal server error", 
+      statusCode: 500, 
+      message: err instanceof Error ? err.message : "Unknown error"
+    })
+  }
+})
+
 // Start server
 const port = process.env.PORT || 3000
 app.listen(port, () => {
