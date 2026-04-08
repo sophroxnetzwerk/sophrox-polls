@@ -1,103 +1,56 @@
-# Sophrox Poll - Self-Hosted Polling Application
+# Sophrox Polls
 
-A fully functional, self-hosted polling application built with React + TypeScript + Tailwind CSS (frontend) and Express + Prisma (backend).
+Self-hosted polling application with Discord OAuth integration.
 
-## 🚀 Quick Start
+## Quick Start
 
-### Prerequisites
-- Node.js 20+
-- npm or yarn
-- Docker & Docker Compose (optional, for containerized deployment)
+**Development:**
+```bash
+# Backend
+cd backend && npm install && npm run dev
 
-### Development Setup
+# Frontend (new terminal)
+cd sophrox-polls && npm install && npm run dev
+```
 
-1. **Clone and Install Dependencies**
-   ```bash
-   cd /mnt/ssd2/Workspaces/Websites/sophrox-poll
+**Docker:**
+```bash
+cp .env.example .env.production
+# Edit .env.production with your Discord credentials
+docker-compose --env-file .env.production up -d
+```
 
-   # Backend
-   cd backend && npm install
-   
-   # Frontend (from root)
-   cd ../sophrox-polls && npm install
-   ```
+See [`README.DOCKER.md`](./README.DOCKER.md) for Docker setup details.
 
-2. **Configure Environment Variables**
-   ```bash
-   # Copy template to actual files
-   cp .env.example .env
-   
-   # Backend
-   cp backend/.env.example backend/.env
-   
-   # Frontend
-   cp sophrox-polls/apps/web/.env.example sophrox-polls/apps/web/.env
-   ```
+## Features
 
-3. **Setup Database**
-   ```bash
-   cd backend
-   npm run prisma:migrate
-   npm run prisma:seed  # Optional: seed with sample data
-   ```
+- 🔐 Discord OAuth Authentication
+- 🎨 Category System with Discord Role Colors
+- 🗳️ Real-time Polling with Vote Limits
+- 🤖 Automatic Discord Role Color Sync
+- ⚡ Built with React + Express + Prisma
+- 🐳 Docker Ready
 
-4. **Start Development Servers**
-   ```bash
-   # Terminal 1: Backend (from backend/)
-   npm run dev
-   # Server runs on http://localhost:3000
-   
-   # Terminal 2: Frontend (from sophrox-polls/)
-   npm run dev
-   # Frontend runs on http://localhost:5173
-   ```
+## Tech Stack
 
-### Docker Deployment
+- **Frontend**: React 19, TypeScript, Vite, TailwindCSS, ShadCN UI
+- **Backend**: Express.js, TypeScript, Prisma ORM
+- **Database**: SQLite (dev) / PostgreSQL (prod)
+- **Auth**: Discord OAuth + JWT
 
-1. **Using Docker Compose (Easiest)**
-   ```bash
-   # From project root
-   docker-compose up -d
-   
-   # Backend: http://localhost:3000
-   # Frontend: http://localhost:5173
-   ```
+## Documentation
 
-2. **Individual Docker Builds**
-   ```bash
-   # Backend
-   docker build -f Dockerfile.backend -t sophrox-poll-backend .
-   docker run -p 3000:3000 --env-file .env sophrox-poll-backend
-   
-   # Frontend
-   docker build -f Dockerfile.frontend -t sophrox-poll-frontend .
-   docker run -p 5173:3000 sophrox-poll-frontend
-   ```
+- [Docker Deployment](./README.DOCKER.md) - Quick Docker setup
+- [Deployment Guide](./DEPLOYMENT.md) - Production deployment & CI/CD
 
-3. **View Logs**
-   ```bash
-   docker-compose logs -f backend
-   docker-compose logs -f frontend
-   ```
+## Discord Setup
 
-4. **Stop Services**
-   ```bash
-   docker-compose down
-   ```
+1. Create Discord Application → https://discord.com/developers/applications
+2. Add OAuth2 Redirect URI: `https://your-domain.com/auth/discord`
+3. Copy Client ID & Secret to `.env`
+4. Create Discord Bot with required intents
+5. Add bot to your guild with `manage_roles` permission
 
-## 🚀 Features
-
-- **User Authentication**: JWT-based authentication with refresh tokens
-- **Role-Based Access Control**: Admin, Creator, and Voter roles with strict permission enforcement
-- **Poll Management**: Create, read, update, and delete polls (admin-only deletion)
-- **Voting System**: Vote on active polls with IP-based and user-based rate limiting
-- **Live Results**: Real-time poll result updates every 5 seconds
-- **Advanced Configuration**: 
-  - Max total votes per poll
-  - Per-user and per-IP vote limits
-  - Deadline enforcement
-  - Authentication requirement toggle
-  - CAPTCHA placeholder for future integration
 
 ## 📋 Tech Stack
 
