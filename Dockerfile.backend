@@ -14,6 +14,9 @@ COPY backend/src ./src
 COPY backend/tsconfig.json ./
 COPY backend/prisma ./prisma
 
+# Generate Prisma Client
+RUN npx prisma generate
+
 # Build TypeScript - verify all source files exist
 RUN echo "Source files:" && find src -name "*.ts" && \
     npm run build && \
@@ -32,6 +35,9 @@ RUN npm ci --omit=dev
 
 # Copy Prisma schema
 COPY backend/prisma ./prisma
+
+# Generate Prisma Client in production
+RUN npx prisma generate
 
 # Copy built files from builder - be explicit
 COPY --from=builder /app/dist ./dist
