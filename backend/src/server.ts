@@ -4,8 +4,8 @@ import { PrismaClient } from "@prisma/client"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import dotenv from "dotenv"
-import { getUserRoles } from "./discord"
-import { initializeDiscordBot, getDiscordBotClient } from "./discord-bot"
+import { getUserRoles } from "./discord.js"
+import { initializeDiscordBot, getDiscordBotClient } from "./discord-bot.js"
 
 // Load environment variables
 dotenv.config()
