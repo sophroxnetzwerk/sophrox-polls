@@ -3,6 +3,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Build arguments for Vite
+ARG VITE_API_BASE=https://nexus.sophrox.de/api/v1
+ARG VITE_DISCORD_CLIENT_ID=1491138132026851608
+ARG VITE_FRONTEND_URL=https://nexus.sophrox.de
+
+# Set as environment variables for Vite to pick up
+ENV VITE_API_BASE=$VITE_API_BASE
+ENV VITE_DISCORD_CLIENT_ID=$VITE_DISCORD_CLIENT_ID
+ENV VITE_FRONTEND_URL=$VITE_FRONTEND_URL
+
 # Copy package files
 COPY sophrox-polls/package*.json ./
 COPY sophrox-polls/turbo.json ./
@@ -14,7 +24,7 @@ COPY sophrox-polls/packages ./packages
 # Install dependencies
 RUN npm ci
 
-# Build the project
+# Build the project with env vars
 RUN npm run build --filter=web
 
 # Production image
