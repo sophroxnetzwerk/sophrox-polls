@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  discordId String?   @unique
+  discordUsername String?
+  discordAvatar String?
+  passwordHash String?
+  role      String    @default("voter") // admin, creator, voter
+  isBlocked Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  polls     Poll[]
+  votes     Vote[]
+  pollAccess PollAccess[]
+  pollGroups GroupMembership[]
+  categories UserCategory[]
+  createdCategories Category[]
+
+  @@index([role])
+  @@index([isBlocked])
+}
+
+model Category {
+  id              String      @id @default(cuid())
+  name            String      @unique
+  description     String?
+  discordRoleId   String?     // Discord Role ID für diese Kategorie
+  createdBy       String
+  creator         User        @relation(fields: [createdBy], references: [id])
+  polls           Poll[]
+  users           UserCategory[]
+  createdAt       DateTime    @default(now())
+
+  @@index([discordRoleId])
+}
+
+model Poll {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  status      String      @default("draft") // draft, active, closed
+  creatorId   String
+  creator     User        @relation(fields: [creatorId], references: [id])
+  categoryId  String?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  options     Option[]
+  votes       Vote[]
+  config      PollConfig?
+  access      PollAccess[]
+  groups      PollGroup[]
+  createdAt   DateTime    @default(now())
+  closedAt    DateTime?
+
+  @@index([creatorId])
+  @@index([status])
+  @@index([categoryId])
+}
+
+model UserCategory {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, categoryId])
+}
+
+model Option {
+  id     String @id @default(cuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label  String
+  votes  Vote[]
+
+  @@index([pollId])
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  pollId    String
+  optionId  String
+  userId    String?
+  ipAddress String
+  createdAt DateTime @default(now())
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option    Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([pollId, optionId, userId])
+  @@index([pollId])
+  @@index([userId])
+  @@index([ipAddress])
+}
+
+model PollConfig {
+  id             String    @id @default(cuid())
+  pollId         String    @unique
+  poll           Poll      @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  multipleChoice Boolean   @default(false)
+  maxVotesPerUser Int      @default(1)
+  totalMaxVotes  Int?
+  requireAuth    Boolean   @default(true)
+  requireAccess  Boolean   @default(false)
+  ipLimit        Int       @default(1)
+  captchaEnabled Boolean   @default(false)
+  showVoters     Boolean   @default(false)
+  deadline       DateTime?
+
+  @@index([pollId])
+}
+
+model PollAccess {
+  id        String   @id @default(cuid())
+  pollId    String
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy String
+  createdAt DateTime @default(now())
+
+  @@unique([pollId, userId])
+  @@index([pollId])
+  @@index([userId])
+}
+
+model PollGroup {
+  id        String   @id @default(cuid())
+  pollId    String
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  name      String
+  members   GroupMembership[]
+  createdAt DateTime @default(now())
+
+  @@unique([pollId, name])
+  @@index([pollId])
+}
+
+model GroupMembership {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     PollGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}

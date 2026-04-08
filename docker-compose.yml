@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: sophrox-poll-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-your-refresh-secret-change-in-production}
+      - PORT=3000
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI:-http://localhost:5173/auth/discord}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - DISCORD_ADMIN_ID=${DISCORD_ADMIN_ID}
+      - DISCORD_GUILD_ID=${DISCORD_GUILD_ID}
+    volumes:
+      - ./backend/prisma:/app/prisma
+    networks:
+      - sophrox-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: sophrox-poll-frontend
+    ports:
+      - "5173:3000"
+    environment:
+      - VITE_API_BASE=${VITE_API_BASE:-http://localhost:3000/api/v1}
+      - VITE_DISCORD_CLIENT_ID=${VITE_DISCORD_CLIENT_ID}
+    depends_on:
+      - backend
+    networks:
+      - sophrox-network
+    restart: unless-stopped
+
+networks:
+  sophrox-network:
+    driver: bridge

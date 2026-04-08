@@ -1,0 +1,39 @@
+# Frontend Dockerfile - Multi-stage build
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY sophrox-polls/package*.json ./
+COPY sophrox-polls/turbo.json ./
+
+# Copy all workspace dependencies
+COPY sophrox-polls/apps ./apps
+COPY sophrox-polls/packages ./packages
+
+# Install dependencies
+RUN npm ci
+
+# Build the project
+RUN npm run build --filter=web
+
+# Production image
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install serve to serve the static files
+RUN npm install -g serve
+
+# Copy built files from builder
+COPY --from=builder /app/apps/web/dist ./dist
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# Start server
+CMD ["serve", "-s", "dist", "-l", "3000"]
