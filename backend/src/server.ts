@@ -376,7 +376,7 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
     }
 
     console.log("✅ Discord auth successful:", { userId: user.id, role: user.role })
-    return res.status(200).json({
+    const responseBody = {
       user: { 
         id: user.id, 
         email: user.email, 
@@ -386,7 +386,9 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
       },
       accessToken,
       refreshToken,
-    })
+    }
+    console.log("📤 Sending response:", { hasUser: !!responseBody.user, hasToken: !!responseBody.accessToken })
+    return res.status(200).json(responseBody)
   } catch (error) {
     console.error("❌ Discord auth error:", {
       message: error instanceof Error ? error.message : String(error),
