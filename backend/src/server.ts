@@ -74,6 +74,33 @@ const generateRefreshToken = (userId: string): string => {
 }
 let dbInitialized = false
 
+const checkAndSyncDatabase = async () => {
+  try {
+    logger.info("🔄 Checking database schema...")
+    
+    // Try to query a table with all fields to see if migration is applied
+    try {
+      await prisma.user.findFirst({
+        select: { id: true, isBlocked: true },
+        take: 1,
+      })
+      logger.success("✅ Database schema is in sync")
+      return true
+    } catch (error: any) {
+      if (error.code === 'P2022' || error.message.includes('does not exist')) {
+        logger.warn("⚠️ Database schema out of sync - migrations not applied")
+        logger.info("💡 Please run: npx prisma db push")
+        logger.info("Or if using migrations: npx prisma migrate deploy")
+        return false
+      }
+      throw error
+    }
+  } catch (error) {
+    logger.error("Database check failed: " + (error instanceof Error ? error.message : String(error)))
+    return false
+  }
+}
+
 const seedDiscordAdmin = async () => {
   if (dbInitialized) return
   try {
@@ -124,6 +151,17 @@ const seedDiscordAdmin = async () => {
 }
 
 const initializeDatabase = async () => {
+  // Check database schema first
+  const isInSync = await checkAndSyncDatabase()
+  
+  if (!isInSync) {
+    logger.error("Database schema is out of sync. Please run migrations first.")
+    logger.info("Run one of these commands:")
+    logger.info("  npx prisma db push")
+    logger.info("  or: npx prisma migrate deploy")
+    return
+  }
+  
   // Fire and forget - don't block
   seedDiscordAdmin().catch((err) => {
     console.error("Database initialization error:", err instanceof Error ? err.message : String(err))
@@ -279,6 +317,64 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(user.id, user.role)
     const refreshToken = generateRefreshToken(user.id)
 
+    // If admin, sync category colors with Discord
+    if (user.role === "admin") {
+      console.log("👑 Admin detected, syncing category colors...")
+      try {
+        const client = getDiscordBotClient()
+        if (client) {
+          const guildId = process.env.DISCORD_GUILD_ID
+          if (guildId) {
+            const guild = await client.guilds.fetch(guildId)
+            const roles = await guild.roles.fetch()
+            
+            const roleColorMap = new Map<string, string>()
+            const DEFAULT_COLOR = "#6366f1" // Indigo fallback
+            
+            roles.forEach((role) => {
+              const color = role.hexColor === "#000000" ? DEFAULT_COLOR : role.hexColor
+              roleColorMap.set(role.id, color)
+            })
+
+            // Get ALL categories to debug
+            const allCategories = await prisma.category.findMany()
+            console.log(`[SYNC_DEBUG] Total categories: ${allCategories.length}`)
+            allCategories.forEach((cat) => {
+              console.log(`  - ${cat.name}: discordRoleId = ${cat.discordRoleId || "NOT SET"}`)
+            })
+
+            // Update all categories with role colors
+            const categories = await prisma.category.findMany({
+              where: { discordRoleId: { not: null } },
+            })
+
+            console.log(`[SYNC_DEBUG] Categories with discordRoleId: ${categories.length}`)
+
+            let updated = 0
+            for (const category of categories) {
+              if (category.discordRoleId && roleColorMap.has(category.discordRoleId)) {
+                const color = roleColorMap.get(category.discordRoleId)!
+                console.log(`[SYNC_DEBUG] ✅ Found color for ${category.name}: ${color}`)
+                await prisma.category.update({
+                  where: { id: category.id },
+                  data: { discordRoleColor: color },
+                })
+                updated++
+              } else if (category.discordRoleId) {
+                console.log(`[SYNC_DEBUG] ⚠️ Role ID not found in Discord: ${category.discordRoleId}`)
+              }
+            }
+            
+            if (updated > 0) {
+              console.log(`✅ Updated ${updated} categories with Discord role colors`)
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ Could not sync category colors:", error instanceof Error ? error.message : String(error))
+      }
+    }
+
     console.log("✅ Discord auth successful:", { userId: user.id, role: user.role })
     return res.status(200).json({
       user: { 
@@ -395,20 +491,110 @@ app.get("/api/v1/discord/roles", verifyToken, async (req: Request, res: Response
 app.get("/api/v1/categories", verifyToken, async (req: Request, res: Response) => {
   try {
     console.log("📋 Fetching categories for user:", req.user?.id)
-    const categories = await prisma.category.findMany({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        discordRoleId: true,
-        createdAt: true,
-      },
-    })
-    console.log("✅ Categories fetched:", { count: categories.length })
+    
+    // Use raw query to get all fields including discordRoleColor
+    let categories = await prisma.$queryRaw`
+      SELECT id, name, description, discordRoleId, discordRoleColor, createdAt 
+      FROM Category 
+      ORDER BY name
+    ` as any[]
+    
+    console.log("[CATEGORIES] Raw query result:", JSON.stringify(categories))
+    
+    // If any category has null discordRoleColor and has a discordRoleId, try to sync colors
+    const hasNullColors = categories.some((c) => c.discordRoleId && !c.discordRoleColor)
+    
+    if (hasNullColors) {
+      console.log("[SYNC] Categories have null colors, attempting to sync from Discord...")
+      try {
+        const client = getDiscordBotClient()
+        if (client) {
+          const guildId = process.env.DISCORD_GUILD_ID
+          if (guildId) {
+            const guild = await client.guilds.fetch(guildId)
+            const roles = await guild.roles.fetch()
+            
+            const roleColorMap = new Map<string, string>()
+            const DEFAULT_COLOR = "#6366f1"
+            
+            roles.forEach((role) => {
+              const color = role.hexColor === "#000000" ? DEFAULT_COLOR : role.hexColor
+              roleColorMap.set(role.id, color)
+              console.log(`[DISCORD_ROLE] ${role.name}: ${role.hexColor} -> ${color}`)
+            })
+
+            // Update categories with null colors
+            for (const category of categories) {
+              if (category.discordRoleId && !category.discordRoleColor && roleColorMap.has(category.discordRoleId)) {
+                const color = roleColorMap.get(category.discordRoleId)!
+                await prisma.category.update({
+                  where: { id: category.id },
+                  data: { discordRoleColor: color },
+                })
+                category.discordRoleColor = color
+                console.log(`[SYNC] ✅ Updated ${category.name} with color ${color}`)
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.warn("[SYNC] Could not sync colors:", error instanceof Error ? error.message : String(error))
+      }
+    }
+    
+    console.log("✅ Categories fetched:", { count: categories.length, colors: categories.map((c) => ({ name: c.name, color: c.discordRoleColor })) })
     res.json({ categories })
   } catch (error) {
     console.error("❌ Error fetching categories:", { error })
     res.status(500).json({ error: "Server error", statusCode: 500, message: "Internal server error" })
+  }
+})
+
+// Debug endpoint to see all Discord roles with their colors
+app.get("/api/v1/discord/roles/debug", verifyToken, requireRole("admin"), async (req: Request, res: Response) => {
+  try {
+    console.log("[DEBUG_ROLES] Admin debug request")
+    const client = getDiscordBotClient()
+
+    if (!client) {
+      return res.status(503).json({ error: "Discord bot not available" })
+    }
+
+    const guildId = process.env.DISCORD_GUILD_ID
+    if (!guildId) {
+      return res.status(400).json({ error: "Guild ID not configured" })
+    }
+
+    const guild = await client.guilds.fetch(guildId)
+    const roles = await guild.roles.fetch()
+
+    const rolesList = roles
+      .map((role) => ({
+        id: role.id,
+        name: role.name,
+        hexColor: role.hexColor,
+        color: role.color,
+        managed: role.managed,
+        position: role.position,
+      }))
+      .sort((a, b) => b.position - a.position)
+
+    // Auch Kategorien zeigen
+    const categories = await prisma.category.findMany()
+
+    res.json({
+      total: rolesList.length,
+      withColors: rolesList.filter((r) => r.hexColor !== "#000000").length,
+      roles: rolesList,
+      categories: categories,
+      debug: {
+        message: "Check if categories have discordRoleId set",
+        coloredRoles: rolesList.filter((r) => r.hexColor !== "#000000").map((r) => ({ id: r.id, name: r.name, color: r.hexColor })),
+      }
+    })
+  } catch (error) {
+    console.error("[DEBUG_ROLES] Error:", error)
+    res.status(500).json({ error: "Server error" })
   }
 })
 
@@ -481,6 +667,75 @@ app.delete("/api/v1/categories/:id", verifyToken, requireRole("admin"), async (r
   }
 })
 
+// Admin endpoint to refresh Discord role colors for all categories
+app.post("/api/v1/categories/sync-colors", verifyToken, requireRole("admin"), async (req: Request, res: Response) => {
+  try {
+    console.log("🔄 Syncing Discord role colors for categories...")
+    const client = getDiscordBotClient()
+
+    if (!client) {
+      console.warn("[SYNC_COLORS] Discord bot not initialized")
+      return res.status(503).json({
+        error: "Discord bot not available",
+        statusCode: 503,
+        message: "Discord bot is not currently connected",
+      })
+    }
+
+    const guildId = process.env.DISCORD_GUILD_ID
+    if (!guildId) {
+      console.warn("[SYNC_COLORS] DISCORD_GUILD_ID not configured")
+      return res.status(400).json({
+        error: "Configuration missing",
+        statusCode: 400,
+        message: "Discord Guild ID not configured",
+      })
+    }
+
+    // Fetch all roles from Discord
+    const guild = await client.guilds.fetch(guildId)
+    const roles = await guild.roles.fetch()
+    
+    // Create map of role IDs to colors
+    const roleColorMap = new Map<string, string>()
+    roles.forEach((role) => {
+      if (role.hexColor !== "#000000") { // Skip default color
+        roleColorMap.set(role.id, role.hexColor)
+      }
+    })
+
+    console.log(`📍 Found ${roleColorMap.size} roles with colors`)
+
+    // Get all categories with Discord role IDs
+    const categories = await prisma.category.findMany({
+      where: {
+        discordRoleId: {
+          not: null,
+        },
+      },
+    })
+
+    let updated = 0
+    for (const category of categories) {
+      if (category.discordRoleId && roleColorMap.has(category.discordRoleId)) {
+        const color = roleColorMap.get(category.discordRoleId)!
+        await prisma.category.update({
+          where: { id: category.id },
+          data: { discordRoleColor: color },
+        })
+        updated++
+        console.log(`✅ Updated ${category.name} with color ${color}`)
+      }
+    }
+
+    console.log(`🎨 Synced colors for ${updated} categories`)
+    res.json({ synced: updated, total: categories.length })
+  } catch (error) {
+    console.error("❌ Error syncing colors:", error)
+    res.status(500).json({ error: "Server error", statusCode: 500, message: "Internal server error" })
+  }
+})
+
 // Polls Routes
 app.get("/api/v1/polls", verifyToken, async (req: Request, res: Response) => {
   try {
@@ -506,6 +761,7 @@ app.get("/api/v1/polls", verifyToken, async (req: Request, res: Response) => {
           select: {
             id: true,
             name: true,
+            discordRoleColor: true,
           }
         } as any,
         options: {

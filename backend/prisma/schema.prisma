@@ -36,6 +36,7 @@ model Category {
   name            String      @unique
   description     String?
   discordRoleId   String?     // Discord Role ID für diese Kategorie
+  discordRoleColor String?    // Cached Discord Role Color (Hex)
   createdBy       String
   creator         User        @relation(fields: [createdBy], references: [id])
   polls           Poll[]

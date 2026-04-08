@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Trash2, CheckCircle2, Clock, BarChart3 } from "lucide-react"
 import { getUserRole, getUserId } from "../../lib/auth"
 import { useDeletePoll } from "../../hooks/usePolls"
+import { getLighterColor, getTextColorForBackground } from "../../lib/discord"
 
 interface PollCardProps {
   id: string
@@ -23,6 +24,7 @@ interface PollCardProps {
   category?: {
     id: string
     name: string
+    discordRoleColor?: string
   }
   currentUserId?: string
 }
@@ -83,9 +85,16 @@ export const PollCard = ({
             {/* Category & Creator Info */}
             <div className="flex flex-col gap-2">
               {category && (
-                <div className="inline-flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2 w-fit">
-                  <span className="font-medium">{category.name}</span>
-                </div>
+                <Badge 
+                  variant="outline"
+                  style={{
+                    backgroundColor: category.discordRoleColor || "#6366f1",
+                    color: "#ffffff",
+                    borderColor: category.discordRoleColor || "#6366f1",
+                  }}
+                >
+                  {category.name}
+                </Badge>
               )}
               {showCreator && creator && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">

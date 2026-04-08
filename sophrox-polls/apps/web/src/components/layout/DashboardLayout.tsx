@@ -5,9 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Search, Zap, TrendingUp, BarChart3, Loader2 } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Plus, Search, Zap, TrendingUp, BarChart3, Loader2, Filter } from "lucide-react"
 import { getUserRole, getUserId } from "../../lib/auth"
 import { usePollList } from "../../hooks/usePolls"
+import { useCategories } from "../../hooks/useCategories"
 import type { Poll } from "../../hooks/usePolls"
 import PollCard from "../polls/PollCard"
 import CreatePollModal from "../polls/CreatePollModal"
@@ -17,9 +30,12 @@ export const DashboardLayout = () => {
   const role = getUserRole()
   const userId = getUserId() || ""
   const { data, isLoading } = usePollList()
+  const { data: categoriesData } = useCategories()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("polls")
   const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<{ active: boolean; closed: boolean }>({ active: true, closed: true })
 
   const myPolls = useMemo(
     () => (data?.polls || []).filter((poll: Poll) => poll.creatorId === userId) || [],
@@ -35,10 +51,12 @@ export const DashboardLayout = () => {
     () =>
       (role === "admin" ? data?.polls || [] : myPolls).filter(
         (poll: Poll) =>
-          poll.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          poll.description?.toLowerCase().includes(searchQuery.toLowerCase())
+          (poll.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          poll.description?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+          (selectedCategory === "all" || poll.categoryId === selectedCategory) &&
+          ((poll.status === "active" && statusFilter.active) || (poll.status === "closed" && statusFilter.closed))
       ),
-    [data?.polls, myPolls, searchQuery, role]
+    [data?.polls, myPolls, searchQuery, role, selectedCategory, statusFilter]
   )
 
   const totalVotes = useMemo(
@@ -130,6 +148,74 @@ export const DashboardLayout = () => {
               </TabsList>
 
               <div className="flex gap-2 w-full sm:w-auto">
+                {/* Filter Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-10 w-10">
+                      <Filter className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuLabel>Filter</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    
+                    {/* Status Submenu */}
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <Zap className="w-4 h-4 mr-2" />
+                        Status
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuCheckboxItem
+                          checked={statusFilter.active}
+                          onCheckedChange={(checked) =>
+                            setStatusFilter({ ...statusFilter, active: checked })
+                          }
+                        >
+                          <Zap className="w-3 h-3 mr-2 text-green-500" />
+                          Open
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={statusFilter.closed}
+                          onCheckedChange={(checked) =>
+                            setStatusFilter({ ...statusFilter, closed: checked })
+                          }
+                        >
+                          <BarChart3 className="w-3 h-3 mr-2 text-red-500" />
+                          Closed
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+
+                    {/* Categories Submenu */}
+                    {categoriesData?.categories && categoriesData.categories.length > 0 && (
+                      <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Categories
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                          <DropdownMenuCheckboxItem
+                            checked={selectedCategory === "all"}
+                            onCheckedChange={() => setSelectedCategory("all")}
+                          >
+                            All Categories
+                          </DropdownMenuCheckboxItem>
+                          {categoriesData.categories.map((category: any) => (
+                            <DropdownMenuCheckboxItem
+                              key={category.id}
+                              checked={selectedCategory === category.id}
+                              onCheckedChange={() => setSelectedCategory(category.id)}
+                            >
+                              {category.name}
+                            </DropdownMenuCheckboxItem>
+                          ))}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 {/* Search Input */}
                 <div className="relative flex-1 sm:flex-none sm:w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
