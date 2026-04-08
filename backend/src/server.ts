@@ -324,6 +324,54 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
       })
     }
 
+    // Sync user's Discord roles with UserCategory
+    console.log("📚 Syncing Discord roles to categories...")
+    try {
+      const client = getDiscordBotClient()
+      if (client) {
+        const guildId = process.env.DISCORD_GUILD_ID
+        if (guildId) {
+          const guild = await client.guilds.fetch(guildId)
+          const member = await guild.members.fetch(discordUser.id)
+          const userRoleIds = Array.from(member.roles.cache.keys())
+          console.log(`👤 User ${discordUser.username} has Discord roles: ${userRoleIds.join(", ") || "none"}`)
+
+          // Get all categories with Discord role IDs
+          const categories = await prisma.category.findMany({
+            where: { discordRoleId: { not: null } },
+          })
+          console.log(`📋 Total categories with Discord roles: ${categories.length}`)
+
+          // Clear existing UserCategory entries for this user
+          await prisma.userCategory.deleteMany({
+            where: { userId: user.id },
+          })
+          console.log("🗑️ Cleared previous UserCategory entries")
+
+          // Add new entries for matching roles
+          let matched = 0
+          for (const category of categories) {
+            if (category.discordRoleId && userRoleIds.includes(category.discordRoleId)) {
+              await prisma.userCategory.create({
+                data: {
+                  userId: user.id,
+                  categoryId: category.id,
+                },
+              })
+              console.log(`✅ Added user to category: ${category.name}`)
+              matched++
+            } else {
+              console.log(`❌ User doesn't have role for category: ${category.name} (need: ${category.discordRoleId})`)
+            }
+          }
+          console.log(`✅ Synced user to ${matched} categories`)
+        }
+      }
+    } catch (roleError) {
+      console.error("⚠️ Failed to sync Discord roles:", roleError instanceof Error ? roleError.message : String(roleError))
+      // Don't fail login if role sync fails
+    }
+
     console.log("🔐 Generating JWT tokens...")
     let accessToken: string
     let refreshToken: string
