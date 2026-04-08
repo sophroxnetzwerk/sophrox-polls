@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -66,7 +66,6 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
               ipLimit: 1,
               captchaEnabled: false,
               showVoters: true,
-              multipleChoice: true,
             },
           }
         : {

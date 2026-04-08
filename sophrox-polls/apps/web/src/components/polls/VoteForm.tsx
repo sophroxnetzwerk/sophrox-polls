@@ -78,7 +78,6 @@ export const VoteForm = ({
 
   const isSelected = (optionId: string) => selectedOptions.includes(optionId)
   const hasSelection = selectedOptions.length > 0
-  const voteChanged = isEditMode && JSON.stringify(selectedOptions.sort()) !== JSON.stringify(userVotes.sort())
 
   // Display user's current votes
   if (showingUserVotes) {
