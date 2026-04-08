@@ -516,13 +516,16 @@ app.get("/api/v1/categories", verifyToken, async (req: Request, res: Response) =
   try {
     console.log("📋 Fetching categories for user:", req.user?.id)
     
-    // Use raw query to get all fields including discordRoleColor
+    // Get user's accessible categories based on UserCategory table
     let categories = await prisma.$queryRaw`
-      SELECT id, name, description, discordRoleId, discordRoleColor, createdAt 
-      FROM Category 
-      ORDER BY name
+      SELECT c.id, c.name, c.description, c.discordRoleId, c.discordRoleColor, c.createdAt 
+      FROM Category c
+      INNER JOIN UserCategory uc ON c.id = uc.categoryId
+      WHERE uc.userId = ${req.user?.id}
+      ORDER BY c.name
     ` as any[]
     
+    console.log(`[CATEGORIES] User has access to ${categories.length} categories`)
     console.log("[CATEGORIES] Raw query result:", JSON.stringify(categories))
     
     // If any category has null discordRoleColor and has a discordRoleId, try to sync colors
@@ -765,7 +768,24 @@ app.get("/api/v1/polls", verifyToken, async (req: Request, res: Response) => {
   try {
     console.log("\x1b[34m[API]\x1b[0m GET /polls - Fetching polls with categories")
     
+    // Get user's categories (from Discord roles or manual assignment)
+    const userCategories = await prisma.userCategory.findMany({
+      where: { userId: req.user!.id },
+      select: { categoryId: true }
+    })
+    const userCategoryIds = userCategories.map(uc => uc.categoryId)
+    console.log(`\x1b[32m[DEBUG]\x1b[0m User has access to categories: ${userCategoryIds.join(", ") || "none"}`)
+
+    // Fetch polls - either creator, has explicit access, or in accessible categories
     const polls = await prisma.poll.findMany({
+      where: {
+        OR: [
+          { creatorId: req.user!.id }, // User created the poll
+          { access: { some: { userId: req.user!.id } } }, // User has explicit access
+          { categoryId: { in: userCategoryIds } }, // Poll is in user's accessible categories
+          { categoryId: null } // Public polls with no category restriction
+        ]
+      },
       select: {
         id: true,
         title: true,
@@ -800,7 +820,7 @@ app.get("/api/v1/polls", verifyToken, async (req: Request, res: Response) => {
       }
     })
 
-    console.log(`\x1b[32m[DEBUG]\x1b[0m Found ${polls.length} polls`)
+    console.log(`\x1b[32m[DEBUG]\x1b[0m Found ${polls.length} polls accessible to user`)
     const pollsWithCategory = polls.filter((p: any) => p.category)
     console.log(`\x1b[32m[DEBUG]\x1b[0m Polls with category: ${pollsWithCategory.length}/${polls.length}`)
     if (polls.length > 0) {
