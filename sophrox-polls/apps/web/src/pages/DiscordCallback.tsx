@@ -43,6 +43,16 @@ export const DiscordCallback = () => {
         }>("/auth/discord", { code })
 
         setTokens(response.accessToken, response.refreshToken, response.user)
+        
+        // Sync user roles after successful login
+        try {
+          await api.post("/auth/sync-roles", {})
+          console.log("✅ Roles synced successfully")
+        } catch (syncError) {
+          console.warn("⚠️ Failed to sync roles:", syncError)
+          // Don't fail login if role sync fails
+        }
+        
         toast.success(t("auth.loginSuccess"))
         navigate("/dashboard")
       } catch (error: any) {

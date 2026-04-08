@@ -50,7 +50,9 @@ export const usePollList = () => {
     queryFn: async () => {
       console.log("[FRONTEND] Fetching polls...")
       const result = await api.get<{ polls: Poll[]; total: number }>("/polls")
-      console.log("[FRONTEND] Polls loaded:", result)
+      console.log("[FRONTEND] Raw API result:", result)
+      console.log("[FRONTEND] Result.polls exists?", !!result.polls)
+      console.log("[FRONTEND] Result.polls length:", result.polls?.length)
       if (result.polls && result.polls.length > 0) {
         console.log("[FRONTEND] First poll category:", result.polls[0].category)
       }

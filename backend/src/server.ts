@@ -499,6 +499,74 @@ app.post("/api/v1/auth/logout", async (req: Request, res: Response) => {
   res.json({ success: true })
 })
 
+// Sync user's Discord roles to categories
+app.post("/api/v1/auth/sync-roles", verifyToken, async (req: Request, res: Response) => {
+  try {
+    console.log("🔄 Syncing user roles...")
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: { id: true, discordId: true, discordUsername: true },
+    })
+
+    if (!user || !user.discordId) {
+      return res.status(400).json({ error: "User has no Discord ID", statusCode: 400 })
+    }
+
+    const client = getDiscordBotClient()
+    if (!client) {
+      console.log("⚠️ Discord bot not available for role sync")
+      return res.status(503).json({ error: "Discord bot not available", statusCode: 503 })
+    }
+
+    const guildId = process.env.DISCORD_GUILD_ID
+    if (!guildId) {
+      console.log("⚠️ No guild ID configured")
+      return res.status(500).json({ error: "Server not configured", statusCode: 500 })
+    }
+
+    try {
+      const guild = await client.guilds.fetch(guildId)
+      const member = await guild.members.fetch(user.discordId)
+      const userRoleIds = Array.from(member.roles.cache.keys())
+      console.log(`👤 User ${user.discordUsername} roles: ${userRoleIds.join(", ") || "none"}`)
+
+      // Get all categories with Discord role IDs
+      const categories = await prisma.category.findMany({
+        where: { discordRoleId: { not: null } },
+      })
+
+      // Clear existing entries
+      await prisma.userCategory.deleteMany({
+        where: { userId: user.id },
+      })
+      console.log("🗑️ Cleared UserCategory entries")
+
+      // Add matching entries
+      let matched = 0
+      for (const category of categories) {
+        if (category.discordRoleId && userRoleIds.includes(category.discordRoleId)) {
+          await prisma.userCategory.create({
+            data: {
+              userId: user.id,
+              categoryId: category.id,
+            },
+          })
+          matched++
+        }
+      }
+
+      console.log(`✅ Synced ${matched} categories`)
+      res.json({ success: true, categoriesCount: matched })
+    } catch (memberError) {
+      console.error("⚠️ Failed to fetch member:", memberError instanceof Error ? memberError.message : String(memberError))
+      res.status(400).json({ error: "Failed to fetch user roles", statusCode: 400 })
+    }
+  } catch (error) {
+    console.error("❌ Role sync failed:", error instanceof Error ? error.message : String(error))
+    res.status(500).json({ error: "Server error", statusCode: 500, message: "Internal server error" })
+  }
+})
+
 // ========== CATEGORY ROUTES ==========
 app.get("/api/v1/discord/roles", verifyToken, async (req: Request, res: Response) => {
   logger.api(`[DISCORD_ROLES] Request from user: ${req.user?.id}`)
