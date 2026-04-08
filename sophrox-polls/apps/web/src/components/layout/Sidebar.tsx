@@ -64,7 +64,7 @@ export const Sidebar = () => {
   return (
     <aside className="w-64 bg-sidebar border-r border-border flex flex-col h-screen sticky top-0">
       {/* Logo / Brand */}
-      <div className="p-6 flex items-center justify-center cursor-pointer" onClick={handleLogoClick}>
+      <div className="p-6 flex items-center justify-center cursor-default" onClick={handleLogoClick}>
         <img src="/sophrox-logo.png" alt="Sophrox" className="h-20 w-auto max-w-[220px]" />
       </div>
 
