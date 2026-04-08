@@ -17,6 +17,7 @@ on:
       - 'Dockerfile.backend'
       - 'Dockerfile.frontend'
       - '.github/workflows/build-and-push.yml'
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
