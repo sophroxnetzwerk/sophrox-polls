@@ -2,8 +2,6 @@ services:
   backend:
     image: ghcr.io/${GITHUB_REPOSITORY}/backend:latest
     container_name: sophrox-poll-backend
-    ports:
-      - "3000:3000"
     environment:
       # Node Environment
       - NODE_ENV=${NODE_ENV:-production}
