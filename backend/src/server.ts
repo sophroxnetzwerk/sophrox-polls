@@ -34,9 +34,26 @@ const logger = {
 const app = express()
 const prisma = new PrismaClient()
 
+// Middleware: Get user IP
+const getClientIp = (req: Request): string => {
+  return (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
+    (req.socket.remoteAddress || "unknown")
+}
+
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "*",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}))
 app.use(express.json())
+
+// Request logging middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  console.log(`[REQUEST] ${req.method} ${req.path} from ${getClientIp(req)}`)
+  next()
+})
 
 // Types
 declare global {
@@ -200,12 +217,6 @@ const requireRole = (...roles: string[]) => {
     }
     next()
   }
-}
-
-// Middleware: Get user IP
-const getClientIp = (req: Request): string => {
-  return (req.headers["x-forwarded-for"] as string)?.split(",")[0].trim() ||
-    (req.socket.remoteAddress || "unknown")
 }
 
 // Auth Routes
@@ -398,6 +409,7 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
       refreshToken,
     }
     console.log("📤 Sending response:", { hasUser: !!responseBody.user, hasToken: !!responseBody.accessToken })
+    res.setHeader("Content-Type", "application/json")
     return res.status(200).json(responseBody)
   } catch (error) {
     console.error("❌ Discord auth error:", {
