@@ -14,9 +14,6 @@ COPY backend/src ./src
 COPY backend/tsconfig.json ./
 COPY backend/prisma ./prisma
 
-# Generate Prisma Client
-RUN npm run prisma:generate
-
 # Build TypeScript
 RUN npm run build
 
