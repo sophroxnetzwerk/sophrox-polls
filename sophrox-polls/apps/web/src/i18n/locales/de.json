@@ -21,6 +21,8 @@
     "dashboard": "Dashboard",
     "createPoll": "Umfrage erstellen",
     "admin": "Admin",
+    "users": "Benutzer",
+    "settings": "Einstellungen",
     "logout": "Abmelden"
   },
   "dashboard": {
@@ -63,6 +65,7 @@
     "createAppointmentPoll": "Termin-Umfrage erstellen",
     "appointmentPoll": "Termin-Umfrage",
     "multiplePoll": "Multiple-Choice-Umfrage",
+    "advancedSettings": "Erweiterte Einstellungen",
     "results": "Ergebnisse",
     "totalVotes": "Stimmen insgesamt",
     "castYourVote": "Deine Stimme abgeben",
@@ -91,7 +94,11 @@
     "pollClosed": "Diese Umfrage akzeptiert keine Stimmen mehr.",
     "statusActive": "Aktiv",
     "statusDraft": "Entwurf",
-    "statusClosed": "Umfrage beendet"
+    "statusClosed": "Umfrage beendet",
+    "noPollsCreatedYet": "Noch keine Umfragen erstellt",
+    "youHaventCreatedAnyPolls": "Du hast noch keine Umfragen erstellt",
+    "noPollsFoundMatching": "Keine Umfragen gefunden, die deiner Suche entsprechen",
+    "createYourFirstPoll": "Erstelle deine erste Umfrage"
   },
   "admin": {
     "users": "Benutzer",
@@ -165,5 +172,9 @@
     "notFound": "Nicht gefunden",
     "serverError": "Serverfehler",
     "tryAgain": "Versuche erneut"
+  },
+  "settings": {
+    "settingsPageTitle": "Einstellungen",
+    "settingsComingSoon": "Einstellungen kommen bald..."
   }
 }

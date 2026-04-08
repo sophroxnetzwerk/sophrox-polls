@@ -257,16 +257,16 @@ export const DashboardLayout = () => {
                       <BarChart3 className="w-10 h-10 text-muted-foreground mb-3 opacity-50" />
                       <p className="text-base font-medium">
                         {searchQuery
-                          ? "No polls found matching your search"
+                          ? t("polls.noPollsFoundMatching")
                           : role === "admin"
-                            ? "No polls created yet"
-                            : "You haven't created any polls yet"}
+                            ? t("polls.noPollsCreatedYet")
+                            : t("polls.youHaventCreatedAnyPolls")}
                       </p>
                       {!searchQuery && (role === "creator" || role === "admin") && (
                         <Link to="/polls/create" className="mt-4">
                           <Button variant="outline" size="sm" className="gap-2">
                             <Plus className="w-4 h-4" />
-                            Create your first poll
+                            {t("polls.createYourFirstPoll")}
                           </Button>
                         </Link>
                       )}

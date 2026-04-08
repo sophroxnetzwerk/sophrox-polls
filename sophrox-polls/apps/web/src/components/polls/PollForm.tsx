@@ -333,7 +333,7 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
               variant="outline"
               className="w-full justify-between hover:bg-muted"
             >
-              <span className="font-semibold">Advanced Settings</span>
+              <span className="font-semibold">{t("polls.advancedSettings")}</span>
               <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
             </Button>
           </CollapsibleTrigger>

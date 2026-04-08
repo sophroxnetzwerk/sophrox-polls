@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom"
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
+import { useTranslation } from "react-i18next"
 import { Toaster } from "sonner"
 import { ThemeProvider } from "./components/theme-provider"
 import { Sidebar } from "./components/layout/Sidebar"
@@ -45,6 +46,7 @@ const PageLayout = () => (
 )
 
 export function App() {
+  const { t } = useTranslation()
   return (
     <ThemeProvider defaultTheme="dark" storageKey="app-theme">
       <QueryClientProvider client={queryClient}>
@@ -63,7 +65,7 @@ export function App() {
                 <Route
                   path="/settings"
                   element={
-                    <div className="text-center py-12 flex-1">Settings coming soon...</div>
+                    <div className="text-center py-12 flex-1">{t("settings.settingsComingSoon")}</div>
                   }
                 />
 

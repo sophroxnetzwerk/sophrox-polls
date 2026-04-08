@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { Outlet } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import {
   LayoutDashboard,
   Plus,
@@ -25,6 +26,7 @@ interface NavItem {
 const DashboardLayout = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation()
   const role = getUserRole()
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
@@ -35,19 +37,19 @@ const DashboardLayout = () => {
       href: "/dashboard",
     },
     {
-      label: "Create Poll",
+      label: t("sidebar.createPoll"),
       icon: <Plus className="w-5 h-5" />,
       href: "/polls/create",
       roles: ["creator", "admin"],
     },
     {
-      label: "Users",
+      label: t("sidebar.users"),
       icon: <Users className="w-5 h-5" />,
       href: "/admin/users",
       roles: ["admin"],
     },
     {
-      label: "Settings",
+      label: t("sidebar.settings"),
       icon: <Settings className="w-5 h-5" />,
       href: "/settings",
     },

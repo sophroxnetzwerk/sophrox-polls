@@ -21,6 +21,8 @@
     "dashboard": "Dashboard",
     "createPoll": "Create Poll",
     "admin": "Admin",
+    "users": "Users",
+    "settings": "Settings",
     "logout": "Logout"
   },
   "dashboard": {
@@ -63,6 +65,7 @@
     "createAppointmentPoll": "Create Appointment Poll",
     "appointmentPoll": "Appointment Poll",
     "multiplePoll": "Multiple Choice Poll",
+    "advancedSettings": "Advanced Settings",
     "results": "Results",
     "totalVotes": "total votes",
     "castYourVote": "Cast Your Vote",
@@ -91,7 +94,11 @@
     "pollClosed": "This poll is no longer accepting votes.",
     "statusActive": "Active",
     "statusDraft": "Draft",
-    "statusClosed": "Poll Ended"
+    "statusClosed": "Poll Ended",
+    "noPollsCreatedYet": "No polls created yet",
+    "youHaventCreatedAnyPolls": "You haven't created any polls yet",
+    "noPollsFoundMatching": "No polls found matching your search",
+    "createYourFirstPoll": "Create your first poll"
   },
   "admin": {
     "users": "Users",
@@ -165,5 +172,9 @@
     "notFound": "Not Found",
     "serverError": "Server Error",
     "tryAgain": "Try Again"
+  },
+  "settings": {
+    "settingsPageTitle": "Settings",
+    "settingsComingSoon": "Settings coming soon..."
   }
 }
