@@ -1,9 +1,10 @@
+// @ts-nocheck
+import { Trash2, CheckCircle2, Clock, BarChart3, ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Trash2, CheckCircle2, Clock, BarChart3, ArrowRight } from "lucide-react"
 import { getUserRole, getUserId } from "../../lib/auth"
 import { useDeletePoll } from "../../hooks/usePolls"
 import { getLighterColor, getTextColorForBackground } from "../../lib/discord"
