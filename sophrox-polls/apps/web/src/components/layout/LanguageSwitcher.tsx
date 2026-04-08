@@ -1,30 +1,33 @@
 import { useTranslation } from "react-i18next"
+import { Globe, Check } from "lucide-react"
 
 export const LanguageSwitcher = () => {
   const { i18n, t } = useTranslation()
 
+  const languageOptions = [
+    { code: "en", label: "English" },
+    { code: "de", label: "Deutsch" },
+  ]
+
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm font-medium text-muted-foreground">{t("common.language")}</span>
+      <Globe className="w-4 h-4 text-muted-foreground" />
       <div className="flex gap-2">
-        <button
-          onClick={() => i18n.changeLanguage("en")}
-          className={`text-2xl transition-opacity hover:opacity-100 ${
-            i18n.language === "en" ? "opacity-100" : "opacity-50"
-          }`}
-          title="English"
-        >
-          🇺🇸
-        </button>
-        <button
-          onClick={() => i18n.changeLanguage("de")}
-          className={`text-2xl transition-opacity hover:opacity-100 ${
-            i18n.language === "de" ? "opacity-100" : "opacity-50"
-          }`}
-          title="Deutsch"
-        >
-          🇩🇪
-        </button>
+        {languageOptions.map((lang) => (
+          <button
+            key={lang.code}
+            onClick={() => i18n.changeLanguage(lang.code)}
+            className={`flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium transition-all ${
+              i18n.language === lang.code
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+            title={lang.label}
+          >
+            {lang.label}
+            {i18n.language === lang.code && <Check className="w-3 h-3 ml-1" />}
+          </button>
+        ))}
       </div>
     </div>
   )
