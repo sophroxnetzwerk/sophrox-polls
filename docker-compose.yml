@@ -2,46 +2,82 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
+    image: ghcr.io/${GITHUB_REPOSITORY}/backend:latest
     container_name: sophrox-poll-backend
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-your-refresh-secret-change-in-production}
+      # Node Environment
+      - NODE_ENV=${NODE_ENV:-production}
       - PORT=3000
+
+      # Database
+      - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
+
+      # JWT Secrets (CHANGE THESE IN PRODUCTION!)
+      - JWT_SECRET=${JWT_SECRET:-generate-a-random-secret-key-in-production}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-generate-a-random-refresh-secret-in-production}
+
+      # Discord OAuth
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
       - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI:-http://localhost:5173/auth/discord}
+
+      # Discord Bot (for role color syncing)
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
       - DISCORD_ADMIN_ID=${DISCORD_ADMIN_ID}
       - DISCORD_GUILD_ID=${DISCORD_GUILD_ID}
+
+      # CORS - Allow frontend URL only
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173}
+
+      # API Base URL (for internal use)
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:3000}
+
     volumes:
-      - ./backend/prisma:/app/prisma
+      # Persist database
+      - sophrox-db:/app/prisma
     networks:
       - sophrox-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
+    image: ghcr.io/${GITHUB_REPOSITORY}/frontend:latest
     container_name: sophrox-poll-frontend
     ports:
       - "5173:3000"
     environment:
+      # API Configuration
       - VITE_API_BASE=${VITE_API_BASE:-http://localhost:3000/api/v1}
+
+      # Discord OAuth
       - VITE_DISCORD_CLIENT_ID=${VITE_DISCORD_CLIENT_ID}
+
+      # Frontend URL (for redirects)
+      - VITE_FRONTEND_URL=${VITE_FRONTEND_URL:-http://localhost:5173}
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - sophrox-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 networks:
   sophrox-network:
     driver: bridge
+
+volumes:
+  sophrox-db:
+    driver: local
