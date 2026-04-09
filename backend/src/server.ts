@@ -303,14 +303,17 @@ app.post("/api/v1/auth/discord", async (req: Request, res: Response) => {
     } else {
       // Update Discord info in case it changed
       console.log("👤 Updating existing user...")
-      user = await prisma.user.update({
+      await prisma.user.update({
         where: { id: user.id },
         data: {
           discordUsername: discordUser.global_name || discordUser.username,
           discordAvatar: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : null,
         } as any,
       })
-      console.log("✅ User updated:", { id: user.id })
+      // Reload user to get current role (might have been changed by admin)
+      user = await prisma.user.findUnique({ where: { id: user.id } }) as any
+      if (!user) throw new Error("Failed to reload user")
+      console.log("✅ User updated:", { id: user.id, role: user.role })
     }
 
     // Check if blocked
@@ -630,16 +633,30 @@ app.get("/api/v1/discord/roles", verifyToken, async (req: Request, res: Response
 
 app.get("/api/v1/categories", verifyToken, async (req: Request, res: Response) => {
   try {
-    console.log("📋 Fetching categories for user:", req.user?.id)
+    console.log("📋 Fetching categories for user:", req.user?.id, "role:", req.user?.role)
     
-    // Get user's accessible categories based on UserCategory table
-    let categories = await prisma.$queryRaw`
-      SELECT c.id, c.name, c.description, c.discordRoleId, c.discordRoleColor, c.createdAt 
-      FROM Category c
-      INNER JOIN UserCategory uc ON c.id = uc.categoryId
-      WHERE uc.userId = ${req.user?.id}
-      ORDER BY c.name
-    ` as any[]
+    // Get user's accessible categories
+    // Admins see all categories, others see only categories they have access to
+    let categories: any[]
+    
+    if (req.user?.role === "admin") {
+      // Admins see all categories
+      categories = await prisma.$queryRaw`
+        SELECT c.id, c.name, c.description, c.discordRoleId, c.discordRoleColor, c.createdAt 
+        FROM Category c
+        ORDER BY c.name
+      ` as any[]
+      console.log(`[CATEGORIES] Admin user - showing all categories`)
+    } else {
+      // Regular users see only categories they have access to via UserCategory table
+      categories = await prisma.$queryRaw`
+        SELECT c.id, c.name, c.description, c.discordRoleId, c.discordRoleColor, c.createdAt 
+        FROM Category c
+        INNER JOIN UserCategory uc ON c.id = uc.categoryId
+        WHERE uc.userId = ${req.user?.id}
+        ORDER BY c.name
+      ` as any[]
+    }
     
     console.log(`[CATEGORIES] User has access to ${categories.length} categories`)
     console.log("[CATEGORIES] Raw query result:", JSON.stringify(categories))
