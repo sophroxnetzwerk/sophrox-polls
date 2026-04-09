@@ -901,13 +901,49 @@ app.get("/api/v1/polls", verifyToken, async (req: Request, res: Response) => {
   try {
     console.log("\x1b[34m[API]\x1b[0m GET /polls - Fetching polls with categories")
     
-    // Get user's categories (from Discord roles or manual assignment)
+    // Get user's categories (from UserCategory table)
     const userCategories = await prisma.userCategory.findMany({
       where: { userId: req.user!.id },
       select: { categoryId: true }
     })
-    const userCategoryIds = userCategories.map(uc => uc.categoryId)
-    console.log(`\x1b[32m[DEBUG]\x1b[0m User has access to categories: ${userCategoryIds.join(", ") || "none"}`)
+    let userCategoryIds = userCategories.map(uc => uc.categoryId)
+    console.log(`\x1b[32m[DEBUG]\x1b[0m User has UserCategory entries for: ${userCategoryIds.join(", ") || "none"}`)
+    
+    // If UserCategory is empty and user is not admin, try to sync from Discord
+    if (userCategoryIds.length === 0) {
+      console.log(`\x1b[33m[WARN]\x1b[0m No UserCategory entries found, attempting Discord role sync...`)
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: req.user!.id },
+          select: { id: true, discordId: true, discordUsername: true },
+        })
+        
+        if (user && user.discordId) {
+          const client = getDiscordBotClient()
+          if (client) {
+            const guildId = process.env.DISCORD_GUILD_ID
+            if (guildId) {
+              const guild = await client.guilds.fetch(guildId)
+              const member = await guild.members.fetch(user.discordId)
+              const userRoleIds = Array.from(member.roles.cache.keys())
+              console.log(`\x1b[36m[DISCORD]\x1b[0m User ${user.discordUsername} roles: ${userRoleIds.join(", ") || "none"}`)
+              
+              // Get categories matching user's Discord roles
+              const categories = await prisma.category.findMany({
+                where: {
+                  discordRoleId: { in: userRoleIds }
+                }
+              })
+              userCategoryIds = categories.map(c => c.id)
+              console.log(`\x1b[36m[DISCORD]\x1b[0m Mapped to categories: ${userCategoryIds.join(", ") || "none"}`)
+            }
+          }
+        }
+      } catch (discordError) {
+        console.warn(`\x1b[33m[WARN]\x1b[0m Discord sync failed:`, discordError instanceof Error ? discordError.message : String(discordError))
+        // Continue without Discord sync - use empty UserCategory
+      }
+    }
 
     // Fetch polls - either creator, has explicit access, or in accessible categories
     const polls = await prisma.poll.findMany({
