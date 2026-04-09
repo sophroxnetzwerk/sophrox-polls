@@ -70,14 +70,14 @@ export const DashboardLayout = () => {
 
   const filteredPolls = useMemo(
     () =>
-      (role === "admin" ? data?.polls || [] : myPolls).filter(
+      (data?.polls || []).filter(
         (poll: Poll) =>
           (poll.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           poll.description?.toLowerCase().includes(searchQuery.toLowerCase())) &&
-          (selectedCategory === "all" || poll.categoryId === selectedCategory) &&
+          (role === "admin" ? true : (selectedCategory === "all" || poll.categoryId === selectedCategory)) &&
           ((poll.status === "active" && statusFilter.active) || (poll.status === "closed" && statusFilter.closed))
       ),
-    [data?.polls, myPolls, searchQuery, role, selectedCategory, statusFilter]
+    [data?.polls, searchQuery, role, selectedCategory, statusFilter]
   )
 
   const totalVotes = useMemo(
