@@ -337,7 +337,16 @@ export const DashboardLayout = () => {
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
             <span>© 2026 Sophrox</span>
             <span>•</span>
-            <span>Secured by Blume Security</span>
+            <span>Secured by{" "}
+              <a
+                href="https://blume-security.cc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                Blume Security
+              </a>
+            </span>
           </div>
         </div>
       </div>
