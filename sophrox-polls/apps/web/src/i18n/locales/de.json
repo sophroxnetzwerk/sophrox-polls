@@ -88,6 +88,7 @@
     "options": "Optionen",
     "votes": "Stimmen",
     "view": "Ansicht",
+    "backToPolls": "Zurück zu Umfragen",
     "searchPolls": "Umfragen durchsuchen...",
     "createNew": "Neue erstellen",
     "pollEnded": "Diese Umfrage ist beendet und akzeptiert keine Stimmen mehr.",
@@ -98,7 +99,9 @@
     "noPollsCreatedYet": "Noch keine Umfragen erstellt",
     "youHaventCreatedAnyPolls": "Du hast noch keine Umfragen erstellt",
     "noPollsFoundMatching": "Keine Umfragen gefunden, die deiner Suche entsprechen",
-    "createYourFirstPoll": "Erstelle deine erste Umfrage"
+    "createYourFirstPoll": "Erstelle deine erste Umfrage",
+    "search": "Umfragen durchsuchen",
+    "filter": "Filtern"
   },
   "admin": {
     "users": "Benutzer",
@@ -138,7 +141,9 @@
     "failedToUpdateRole": "Fehler beim Aktualisieren der Benutzerrolle.",
     "roleUpdatedSuccess": "Benutzerrolle erfolgreich aktualisiert.",
     "categoryCreatedSuccess": "Kategorie erfolgreich erstellt",
-    "categoryUpdatedSuccess": "Kategorie erfolgreich aktualisiert"
+    "categoryUpdatedSuccess": "Kategorie erfolgreich aktualisiert",
+    "activeUsersTab": "Aktive Benutzer",
+    "discordRoleOptional": "Discord-Rolle (Optional)"
   },
   "auth": {
     "login": "Anmelden",
@@ -161,7 +166,9 @@
     "noAuthCode": "Kein Autorisierungscode empfangen",
     "loginSuccess": "Erfolgreich mit Discord angemeldet!",
     "accountPending": "Dein Konto wartet auf Admin-Bestätigung. Bitte warte, bis ein Admin dein Konto genehmigt.",
-    "discordAuthFailed": "Authentifizierung mit Discord fehlgeschlagen"
+    "discordAuthFailed": "Authentifizierung mit Discord fehlgeschlagen",
+    "authenticating": "Mit Discord wird authentifiziert...",
+    "redirecting": "Wird weitergeleitet..."
   },
   "errors": {
     "pollNotFound": "Umfrage nicht gefunden",

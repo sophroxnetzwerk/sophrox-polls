@@ -84,10 +84,10 @@ export const DiscordCallback = () => {
         {loading ? (
           <>
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground">Authenticating with Discord...</p>
+            <p className="text-muted-foreground">{t("auth.authenticating")}</p>
           </>
         ) : (
-          <p className="text-muted-foreground">Redirecting...</p>
+          <p className="text-muted-foreground">{t("auth.redirecting")}</p>
         )}
       </div>
     </div>

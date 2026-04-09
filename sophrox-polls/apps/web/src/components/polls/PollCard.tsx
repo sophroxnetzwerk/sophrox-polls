@@ -129,17 +129,6 @@ export const PollCard = ({
                 {config.label}
               </Badge>
               <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 gap-1 text-xs"
-                  onClick={(e) => {
-                    e.preventDefault()
-                  }}
-                >
-                  {t("polls.view")}
-                  <ArrowRight className="w-3 h-3" />
-                </Button>
                 {isAdmin && (
                   <Button
                     variant="ghost"

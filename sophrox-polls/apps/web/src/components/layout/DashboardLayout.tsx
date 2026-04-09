@@ -177,7 +177,7 @@ export const DashboardLayout = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-56">
-                    <DropdownMenuLabel>Filter</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t("polls.filter")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     
                     {/* Status Submenu */}
@@ -241,7 +241,7 @@ export const DashboardLayout = () => {
                 <div className="relative flex-1 sm:flex-none sm:w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search polls..."
+                    placeholder={t("polls.search")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 h-10"

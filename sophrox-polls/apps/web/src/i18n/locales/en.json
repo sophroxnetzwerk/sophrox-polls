@@ -88,6 +88,7 @@
     "options": "Options",
     "votes": "Votes",
     "view": "View",
+    "backToPolls": "Back to Polls",
     "searchPolls": "Search polls...",
     "createNew": "Create New",
     "pollEnded": "This poll has ended and is no longer accepting votes.",
@@ -98,7 +99,9 @@
     "noPollsCreatedYet": "No polls created yet",
     "youHaventCreatedAnyPolls": "You haven't created any polls yet",
     "noPollsFoundMatching": "No polls found matching your search",
-    "createYourFirstPoll": "Create your first poll"
+    "createYourFirstPoll": "Create your first poll",
+    "search": "Search polls",
+    "filter": "Filter"
   },
   "admin": {
     "users": "Users",
@@ -138,7 +141,9 @@
     "failedToUpdateRole": "Failed to update user role.",
     "roleUpdatedSuccess": "User role updated successfully.",
     "categoryCreatedSuccess": "Category created successfully",
-    "categoryUpdatedSuccess": "Category updated successfully"
+    "categoryUpdatedSuccess": "Category updated successfully",
+    "activeUsersTab": "Active Users",
+    "discordRoleOptional": "Discord Role (Optional)"
   },
   "auth": {
     "login": "Login",
@@ -161,7 +166,9 @@
     "noAuthCode": "No authorization code received",
     "loginSuccess": "Successfully logged in with Discord!",
     "accountPending": "Your account is pending admin approval. Please wait for an admin to approve your account.",
-    "discordAuthFailed": "Failed to authenticate with Discord"
+    "discordAuthFailed": "Failed to authenticate with Discord",
+    "authenticating": "Authenticating with Discord...",
+    "redirecting": "Redirecting..."
   },
   "errors": {
     "pollNotFound": "Poll Not Found",

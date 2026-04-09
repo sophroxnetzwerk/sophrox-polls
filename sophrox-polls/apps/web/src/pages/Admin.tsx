@@ -315,7 +315,7 @@ const Admin = () => {
                           disabled={isUnblockingUser}
                           className="flex-1 sm:flex-none"
                         >
-                          Unblock
+                          {t("admin.unblock")}
                         </Button>
                         <Button
                           variant="destructive"
@@ -323,7 +323,7 @@ const Admin = () => {
                           onClick={() => deleteUser(user.id)}
                           disabled={isDeletingUser}
                         >
-                          Delete
+                          {t("common.delete")}
                         </Button>
                       </div>
                     </div>
@@ -340,10 +340,10 @@ const Admin = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-muted-foreground" />
-                Active Users
+                {t("admin.activeUsersTab")}
               </CardTitle>
               <CardDescription>
-                Total: {usersLoading ? "..." : activeUsers.length}
+                {t("admin.total")}: {usersLoading ? "..." : activeUsers.length}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-auto">
@@ -480,16 +480,16 @@ const Admin = () => {
           <Card className="flex flex-col flex-1">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Manage Categories</CardTitle>
+                <CardTitle>{t("admin.manageCategories")}</CardTitle>
                 <CardDescription>
-                  {categoriesLoading ? "Loading..." : `${categories.length} categories`}
+                  {categoriesLoading ? t("common.loading") : `${categories.length} ${t("admin.categories")}`}
                 </CardDescription>
               </div>
               <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
                 <DialogTrigger asChild>
                   <Button onClick={() => handleOpenCategoryDialog()}>
                     <Plus className="w-4 h-4 mr-2" />
-                    New Category
+                    {t("admin.newCategory")}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -500,7 +500,7 @@ const Admin = () => {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium">Name *</Label>
+                      <Label className="text-sm font-medium">{t("admin.name")} *</Label>
                       <Input
                         placeholder="e.g., Backend Team"
                         value={categoryForm.name}
@@ -510,7 +510,7 @@ const Admin = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Description</Label>
+                      <Label className="text-sm font-medium">{t("admin.description")}</Label>
                       <Textarea
                         placeholder="Optional description..."
                         value={categoryForm.description}
@@ -521,7 +521,7 @@ const Admin = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium">Discord Role (Optional)</Label>
+                      <Label className="text-sm font-medium">{t("admin.discordRoleOptional")}</Label>
                       <Select
                         value={categoryForm.discordRoleId}
                         onValueChange={(value) =>

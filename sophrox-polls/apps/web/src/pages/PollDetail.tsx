@@ -81,7 +81,7 @@ export const PollDetail = () => {
           onClick={() => navigate("/dashboard")}
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Polls
+          {t("polls.backToPolls")}
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -104,7 +104,7 @@ export const PollDetail = () => {
                         className="w-5 h-5 rounded-full"
                       />
                     )}
-                    <span>Created by {poll.creator.discordUsername && poll.creator.discordUsername.trim() ? poll.creator.discordUsername : `User ${poll.creator.id.slice(0, 8)}`}</span>
+                    <span>{t("polls.createdBy")} {poll.creator.discordUsername && poll.creator.discordUsername.trim() ? poll.creator.discordUsername : `User ${poll.creator.id.slice(0, 8)}`}</span>
                   </div>
                 )}
               </div>
@@ -191,7 +191,7 @@ export const PollDetail = () => {
           <div className="lg:col-span-1">
             <Card className="sticky top-6">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg">Vote Details</CardTitle>
+                <CardTitle className="text-lg">{t("polls.voteDetails")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {(() => {
