@@ -66,8 +66,8 @@ export const CreatePollModal = ({ open, onOpenChange }: CreatePollModalProps) =>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Create New Poll</DialogTitle>
-              <DialogDescription>Choose a poll type to get started</DialogDescription>
+              <DialogTitle>{t("polls.createNewPoll")}</DialogTitle>
+              <DialogDescription>{t("polls.chooseType")}</DialogDescription>
             </DialogHeader>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
@@ -82,9 +82,9 @@ export const CreatePollModal = ({ open, onOpenChange }: CreatePollModalProps) =>
                       <CheckCircle2 className="h-10 w-10 text-blue-500" />
                     </div>
                     <div>
-                      <h3 className="font-bold mb-1">Multiple Choice</h3>
+                      <h3 className="font-bold mb-1">{t("polls.multipleChoiceTitle")}</h3>
                       <p className="text-xs text-muted-foreground">
-                        Classic poll with multiple options
+                        {t("polls.multipleChoiceDesc")}
                       </p>
                     </div>
                   </CardContent>
@@ -102,9 +102,9 @@ export const CreatePollModal = ({ open, onOpenChange }: CreatePollModalProps) =>
                       <Calendar className="h-10 w-10 text-purple-500" />
                     </div>
                     <div>
-                      <h3 className="font-bold mb-1">Termin Umfrage</h3>
+                      <h3 className="font-bold mb-1">{t("polls.schedulingTitle")}</h3>
                       <p className="text-xs text-muted-foreground">
-                        Find the best date and time
+                        {t("polls.schedulingDesc")}
                       </p>
                     </div>
                   </CardContent>

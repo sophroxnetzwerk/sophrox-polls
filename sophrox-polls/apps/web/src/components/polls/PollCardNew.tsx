@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,7 @@ export const PollCard = ({
   creatorId,
   currentUserId,
 }: PollCardProps) => {
+  const { t } = useTranslation()
   const role = getUserRole()
   const { mutate: deletePoll, isPending } = useDeletePoll(id)
   const isAdmin = role === "admin"
@@ -78,11 +80,11 @@ export const PollCard = ({
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Options</p>
+            <p className="text-xs text-muted-foreground">{t("polls.optionsLabel")}</p>
             <p className="text-lg font-semibold">{optionCount}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Votes</p>
+            <p className="text-xs text-muted-foreground">{t("polls.votesLabel")}</p>
             <p className="text-lg font-semibold">{totalVotes}</p>
           </div>
         </div>
@@ -92,7 +94,7 @@ export const PollCard = ({
           <Link to={`/polls/${id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">
               <Eye className="w-4 h-4 mr-2" />
-              View
+              {t("polls.viewButton")}
             </Button>
           </Link>
           
@@ -100,7 +102,7 @@ export const PollCard = ({
             <Link to={`/polls/${id}`} className="flex-1">
               <Button variant="outline" size="sm" className="w-full">
                 <BarChart3 className="w-4 h-4 mr-2" />
-                Results
+                {t("polls.resultsButton")}
               </Button>
             </Link>
           )}
@@ -110,7 +112,7 @@ export const PollCard = ({
               variant="destructive"
               size="sm"
               onClick={() => {
-                if (confirm("Delete this poll permanently?")) {
+                if (confirm(t("polls.deletePollConfirm"))) {
                   deletePoll()
                 }
               }}

@@ -195,7 +195,7 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
               {pollType === "scheduling" ? t("polls.availableTimes") : t("polls.answerOptions")}
             </FormLabel>
             <span className="text-sm text-muted-foreground">
-              {fields.length} {fields.length === 1 ? "option" : "options"}
+              {fields.length} {fields.length === 1 ? t("polls.optionSingular") : t("polls.optionPlural")}
             </span>
           </div>
 
@@ -220,13 +220,13 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
                                     className="h-11 flex-1 justify-start text-left font-normal border-2 transition-colors hover:border-primary/50"
                                   >
                                     <CalendarIcon className="w-4 h-4 mr-2 flex-shrink-0" />
-                                    {fieldRender.value ? format(new Date(fieldRender.value), "PPp") : "Pick a time..."}
+                                    {fieldRender.value ? format(new Date(fieldRender.value), "PPp") : t("polls.pickATime")}
                                   </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-auto p-0" align="start">
                                   <div className="p-4 space-y-4">
                                     <div>
-                                      <label className="text-sm font-medium">Date</label>
+                                      <label className="text-sm font-medium">{t("polls.date")}</label>
                                       <Calendar
                                         mode="single"
                                         selected={fieldRender.value ? new Date(fieldRender.value) : undefined}
@@ -244,7 +244,7 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                       <div>
-                                        <label className="text-sm font-medium">Hour</label>
+                                        <label className="text-sm font-medium">{t("polls.hour")}</label>
                                         <Input
                                           type="number"
                                           min="0"
@@ -259,7 +259,7 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
                                         />
                                       </div>
                                       <div>
-                                        <label className="text-sm font-medium">Minute</label>
+                                        <label className="text-sm font-medium">{t("polls.minute")}</label>
                                         <Input
                                           type="number"
                                           min="0"
@@ -287,7 +287,7 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
                             </div>
                           ) : (
                             <Input
-                              placeholder={`Option ${index + 1}`}
+                              placeholder={`${t("common.option")} ${index + 1}`}
                               className="h-11 text-base border-2 transition-colors hover:border-primary/50"
                               {...fieldRender}
                             />
@@ -344,9 +344,9 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
               render={({ field }: any) => (
                 <FormItem className="flex items-center justify-between gap-4">
                   <div className="flex-1">
-                    <FormLabel className="text-base font-semibold">Show Who Voted For What</FormLabel>
+                    <FormLabel className="text-base font-semibold">{t("polls.showVotersLabel")}</FormLabel>
                     <p className="text-sm text-muted-foreground">
-                      Admins and poll creator can always see this. When enabled, everyone can see voter names.
+                      {t("polls.showVotersDesc")}
                     </p>
                   </div>
                   <FormControl>

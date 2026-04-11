@@ -179,7 +179,7 @@ export const PollDetail = () => {
                 >
                   {isClosing && <Loader2 className="w-4 h-4 animate-spin" />}
                   <X className="w-4 h-4" />
-                  Close Poll
+                  {t("polls.closePollButton")}
                 </Button>
               </div>
             )}
@@ -210,7 +210,7 @@ export const PollDetail = () => {
                   if (!hasVoters) {
                     return (
                       <p className="text-sm text-muted-foreground text-center py-4">
-                        No votes yet.
+                        {t("polls.noVotesYet")}
                       </p>
                     );
                   }
