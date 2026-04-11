@@ -30,14 +30,12 @@ export const initializeDiscordBot = async () => {
       client.user?.setPresence({
         activities: [
           {
-            name: "Managing our Users",
-            type: ActivityType.Custom,
+            name: "die Datenbank",
+            type: ActivityType.Streaming,
           },
         ],
         status: PresenceUpdateStatus.DoNotDisturb,
       })
-
-      console.log("🔴 Bot status set to: DND - Managing our Users")
     })
 
     client.on("error", (error) => {
