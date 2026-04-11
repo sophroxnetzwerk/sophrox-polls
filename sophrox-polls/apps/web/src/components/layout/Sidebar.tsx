@@ -11,7 +11,6 @@ import {
   Shield,
 } from "lucide-react"
 import { getUserRole, getUser, logout, isAuthenticated } from "../../lib/auth"
-import LanguageSwitcher from "./LanguageSwitcher"
 
 export const Sidebar = () => {
   const { t } = useTranslation()
@@ -101,9 +100,6 @@ export const Sidebar = () => {
 
       {/* Footer with User Profile & Auth */}
       <div className="p-4 border-t border-border space-y-4">
-        {/* Language Switcher */}
-        <LanguageSwitcher />
-
         {authenticated && user && (
           <div className="px-2 py-3 bg-muted rounded-lg">
             <div className="flex items-center gap-2">
