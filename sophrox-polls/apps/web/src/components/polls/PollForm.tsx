@@ -121,8 +121,8 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
                     <Input
                       placeholder={
                         pollType === "scheduling"
-                          ? "e.g., Team Standup - Next Week"
-                          : "e.g., What's your favorite programming language?"
+                          ? t("polls.placeholderTitleScheduling")
+                          : t("polls.placeholderTitleMultipleChoice")
                       }
                       className="h-12 text-base"
                       {...field}
@@ -147,8 +147,8 @@ export const PollForm = ({ pollType, onSuccess }: PollFormProps) => {
                     <Textarea
                       placeholder={
                         pollType === "scheduling"
-                          ? "e.g., We need to find a time that works for everyone. Please vote for all times you're available."
-                          : "e.g., Help us understand which technology you prefer for the next project..."
+                          ? t("polls.placeholderDescriptionScheduling")
+                          : t("polls.placeholderDescriptionMultipleChoice")
                       }
                       className="min-h-24 text-base resize-none"
                       {...field}
